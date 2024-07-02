@@ -18,14 +18,14 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
 
         display = new JTextField();
-        display.setFont(new Font("MV Boli", Font.PLAIN, 25));
+        display.setFont(new Font("MV Boli", Font.PLAIN, 30));
         display.setEditable(false);
         display.setFocusable(false);
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(-5, -5, -5, -5);
+        gbc.insets = new Insets(-3, -3, -2, -2);
         gbc.weightx = 1;
         gbc.weighty = 1;
 
@@ -80,14 +80,20 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 expression = expression.substring(0, expression.length() - String.valueOf(value).length()) + currentInput;
                 display.setText(expression);
             }
+        } else if (command.equals("√")) {
+            expression += "sqrt";
+            display.setText(expression);
         } else if (command.equals("Del")) {
             if (!expression.isEmpty()) {
                 expression = expression.substring(0, expression.length() - 1);
                 display.setText(expression);
             }
-        } else if (command.equals("Del")) {
-            currentInput=currentInput.substring(currentInput.length()-1);
-        } else if (command.equals("=")) {
+        } else if (command.equals("sin") || command.equals("cos") || command.equals("tan") ||
+            command.equals("sinh") || command.equals("cosh") || command.equals("tanh") ||
+            command.equals("log") || command.equals("ln")) {
+            expression += command;
+            display.setText(expression);
+        }else if (command.equals("=")) {
             try {
                 double result = evaluateExpression(expression);
                 display.setText(String.valueOf(result));
@@ -153,7 +159,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
     private boolean isFunction(String op) {
         return op.equals("sin") || op.equals("cos") || op.equals("tan") ||
             op.equals("sinh") || op.equals("cosh") || op.equals("tanh") ||
-            op.equals("log") || op.equals("ln") || op.equals("√") || op.equals("abs");
+            op.equals("log") || op.equals("ln") || op.equals("sqrt") || op.equals("abs");
     }
 
     private double applyFunction(String function, double value) {
@@ -174,7 +180,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 return Math.log10(value);
             case "ln":
                 return Math.log(value);
-            case "√":
+            case "sqrt":
                 return Math.sqrt(value);
             case "abs":
                 return Math.abs(value);
