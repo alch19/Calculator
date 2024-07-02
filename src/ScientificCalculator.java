@@ -10,12 +10,14 @@ public class ScientificCalculator extends JFrame implements ActionListener {
     private JTextField display;
     private String currentInput = "";
     private String expression = "";
+    private JToggleButton toggleButton;
+    private boolean isDegrees = true;
 
     public ScientificCalculator() {
         setTitle("Scientific Calculator");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(null);    
 
         display = new JTextField();
         display.setFont(new Font("MV Boli", Font.PLAIN, 30));
@@ -49,8 +51,34 @@ public class ScientificCalculator extends JFrame implements ActionListener {
             }
         }
 
-        add(display, BorderLayout.NORTH);
-        add(buttonPanel, BorderLayout.CENTER);
+        toggleButton = new JToggleButton("Degrees");
+        toggleButton.setFont(new Font("MV Boli", Font.PLAIN, 15));
+        toggleButton.setBackground(new Color(0x60E948));
+        toggleButton.setFocusable(false);
+        toggleButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (toggleButton.isSelected()) {
+                    toggleButton.setText("Radians");
+                    toggleButton.setBackground(new Color(0xE96448));
+                    isDegrees = false;
+                } else {
+                    toggleButton.setText("Degrees");
+                    toggleButton.setBackground(new Color(0x60E948));
+                    isDegrees = true;
+                }
+            }
+        });
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(display, BorderLayout.CENTER);
+        topPanel.add(toggleButton, BorderLayout.EAST);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+
+        add(mainPanel);
     }
 
     @Override
@@ -81,7 +109,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 display.setText(expression);
             }
         } else if (command.equals("√")) {
-            expression += "sqrt";
+            expression += "sqrt(";
             display.setText(expression);
         } else if (command.equals("Del")) {
             if (!expression.isEmpty()) {
@@ -91,9 +119,9 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         } else if (command.equals("sin") || command.equals("cos") || command.equals("tan") ||
             command.equals("sinh") || command.equals("cosh") || command.equals("tanh") ||
             command.equals("log") || command.equals("ln")) {
-            expression += command;
+            expression += command + "(";
             display.setText(expression);
-        }else if (command.equals("=")) {
+        } else if (command.equals("=")) {
             try {
                 double result = evaluateExpression(expression);
                 display.setText(String.valueOf(result));
@@ -105,10 +133,20 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 currentInput = "";
             }
         } else {
-            currentInput = "";
-            expression += command;
-            display.setText(expression);
+            if (!expression.isEmpty() && (Character.isDigit(expression.charAt(expression.length() - 1)) || expression.charAt(expression.length() - 1) == ')')) {
+                if (isOperator(expression.charAt(expression.length() - 1))) {
+                    expression = expression.substring(0, expression.length() - 1) + command;
+                } else {
+                    expression += command;
+                }
+                currentInput = "";
+                display.setText(expression);
+            }
         }
+    }
+
+    private boolean isOperator(char c) {
+        return c == '+' || c == '-' || c == '×' || c == '÷' || c == '^';
     }
 
     private double evaluateExpression(String expression) throws Exception {
@@ -128,7 +166,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 i--;
             } else if (tokens[i] == '(')
                 ops.push(String.valueOf(tokens[i]));
-            else if (tokens[i] == ')') {
+                else if (tokens[i] == ')') {
                 while (!ops.peek().equals("("))
                     values.push(applyOp(ops.pop(), values.pop(), values.pop()));
                 ops.pop();
@@ -165,11 +203,11 @@ public class ScientificCalculator extends JFrame implements ActionListener {
     private double applyFunction(String function, double value) {
         switch (function) {
             case "sin":
-                return Math.sin(Math.toRadians(value));
+                return isDegrees ? Math.sin(Math.toRadians(value)) : Math.sin(value);
             case "cos":
-                return Math.cos(Math.toRadians(value));
+                return isDegrees ? Math.cos(Math.toRadians(value)) : Math.cos(value);
             case "tan":
-                return Math.tan(Math.toRadians(value));
+                return isDegrees ? Math.tan(Math.toRadians(value)) : Math.tan(value);
             case "sinh":
                 return Math.sinh(value);
             case "cosh":
