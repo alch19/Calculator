@@ -1,6 +1,8 @@
 package src;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,7 +14,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
     private String expression = "";
     private JToggleButton toggleButton;
     private boolean isDegrees = true;
-
+    
     public ScientificCalculator() {
         setTitle("Scientific Calculator");
         setSize(600, 400);
@@ -20,9 +22,11 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         setLocationRelativeTo(null);    
 
         display = new JTextField();
-        display.setFont(new Font("MV Boli", Font.PLAIN, 30));
+        display.setFont(new Font("MV Boli", Font.PLAIN, 20));
         display.setEditable(false);
         display.setFocusable(false);
+        display.setOpaque(false);
+        display.setBorder(new RoundedBorder(15));
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -53,24 +57,31 @@ public class ScientificCalculator extends JFrame implements ActionListener {
 
         toggleButton = new JToggleButton("Degrees");
         toggleButton.setFont(new Font("MV Boli", Font.PLAIN, 15));
-        toggleButton.setBackground(new Color(0x60E948));
+        toggleButton.setBackground(new Color(0x69B85B));
+        toggleButton.setOpaque(true);
+        toggleButton.setBorderPainted(true);
         toggleButton.setFocusable(false);
+        toggleButton.setContentAreaFilled(false);
+        toggleButton.setForeground(new Color(0x69B85B));
         toggleButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (toggleButton.isSelected()) {
                     toggleButton.setText("Radians");
-                    toggleButton.setBackground(new Color(0xE96448));
+                    toggleButton.setForeground(new Color(0xB85B5B));
                     isDegrees = false;
                 } else {
                     toggleButton.setText("Degrees");
-                    toggleButton.setBackground(new Color(0x60E948));
+                    toggleButton.setForeground(new Color(0x69B85B));
                     isDegrees = true;
                 }
+                toggleButton.repaint();
             }
         });
 
         JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 0));
+        topPanel.setBackground(display.getBackground());
         topPanel.add(display, BorderLayout.CENTER);
         topPanel.add(toggleButton, BorderLayout.EAST);
 
@@ -103,9 +114,11 @@ public class ScientificCalculator extends JFrame implements ActionListener {
             display.setText(expression);
         } else if (command.equals("+/-")) {
             if (!currentInput.isEmpty()) {
-                double value = Double.parseDouble(currentInput);
-                currentInput = String.valueOf(value * -1);
-                expression = expression.substring(0, expression.length() - String.valueOf(value).length()) + currentInput;
+                if (currentInput.startsWith("-")) {
+                    expression = currentInput.substring(1);
+                } else {
+                    expression = "-" + currentInput;
+                }
                 display.setText(expression);
             }
         } else if (command.equals("√")) {
@@ -258,5 +271,26 @@ public class ScientificCalculator extends JFrame implements ActionListener {
     public static void main(String[] args) {
         ScientificCalculator calculator = new ScientificCalculator();
         calculator.setVisible(true);
+    }
+}
+
+class RoundedBorder implements Border {
+
+    private int radius;
+
+    RoundedBorder(int radius) {
+        this.radius = radius;
+    }
+
+    public Insets getBorderInsets(Component c) {
+        return new Insets(this.radius, this.radius, this.radius, this.radius);
+    }
+
+    public boolean isBorderOpaque() {
+        return true;
+    }
+
+    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+        g.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
     }
 }
