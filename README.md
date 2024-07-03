@@ -1,7 +1,9 @@
 # Calculator
 
 Scientific Calculator with many different features
-<img width="594" alt="image" src="https://github.com/alch19/Calculator/assets/173141163/25755c72-a6da-4ef9-b06e-baf55b3acbbc">
+
+## Example Image
+<img width="596" alt="image" src="https://github.com/alch19/Calculator/assets/173141163/e1734adf-225d-4521-9a3f-aa6574b58580">
 
 ## FEATURES
 
