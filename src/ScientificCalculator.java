@@ -2,13 +2,14 @@ package src;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Stack;
 
-public class ScientificCalculator extends JFrame implements ActionListener {
+public class ScientificCalculator extends JFrame implements ActionListener, KeyListener {
     private JTextField display;
     private String currentInput = "";
     private String expression = "";
@@ -19,7 +20,8 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         setTitle("Scientific Calculator");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);    
+        setLocationRelativeTo(null);
+        setResizable(false);    
 
         display = new JTextField();
         display.setFont(new Font("MV Boli", Font.PLAIN, 20));
@@ -27,6 +29,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         display.setFocusable(false);
         display.setOpaque(false);
         display.setBorder(new RoundedBorder(15));
+        display.setForeground(Color.WHITE);
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -56,9 +59,9 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 gbc.gridy = row;
 
                 if (buttons[row][col].matches("\\d") || buttons[row][col].equals(".")) {
-                    button.setBackground(new Color(0x87CEEB));
+                    button.setBackground(new Color(0x344343));
                 } else if(buttons[row][col].equals("=")) {
-                    button.setBackground(new Color(0x5DB85B));
+                    button.setBackground(new Color(0x344343));
                 } else if(buttons[row][col].equals("+") || buttons[row][col].equals("-") || buttons[row][col].equals("×") || buttons[row][col].equals("÷")) {
                     button.setBackground(new Color(0xE24949));
                 } else if(buttons[row][col].equals("π") || buttons[row][col].equals("e") || buttons[row][col].equals("2nd") || buttons[row][col].equals("Mode") || buttons[row][col].equals("Del") || buttons[row][col].equals("AC") || buttons[row][col].equals("+/-")) {
@@ -70,7 +73,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 buttonPanel.add(button, gbc);
             }
         }
-
+        buttonPanel.setBackground(Color.BLACK);
         toggleButton = new JToggleButton("Degrees");
         toggleButton.setFont(new Font("MV Boli", Font.PLAIN, 15));
         toggleButton.setBackground(new Color(0x69B85B));
@@ -96,16 +99,21 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         });
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 0));
-        topPanel.setBackground(display.getBackground());
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 2));
+        topPanel.setOpaque(true);
+        topPanel.setBackground(Color.black);
         topPanel.add(display, BorderLayout.CENTER);
         topPanel.add(toggleButton, BorderLayout.EAST);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(buttonPanel, BorderLayout.CENTER);
-
+        
         add(mainPanel);
+
+        addKeyListener(this);
+        setFocusable(true);
+        requestFocusInWindow();
     }
 
     @Override
@@ -130,7 +138,12 @@ public class ScientificCalculator extends JFrame implements ActionListener {
             display.setText(expression);
         } else if (command.equals("+/-")) {
             if (!currentInput.isEmpty()) {
-                currentInput += "-";
+                double value = Double.parseDouble(currentInput);
+                value = -value;
+                currentInput = String.valueOf(value);
+                expression = expression.substring(0, expression.length() - currentInput.length()) + currentInput;
+                display.setText(expression);
+            } else if (expression.endsWith("(")) {
                 expression += "-";
                 display.setText(expression);
             }
@@ -148,7 +161,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         } else if (command.equals("sin") || command.equals("cos") || command.equals("tan") ||
             command.equals("sinh") || command.equals("cosh") || command.equals("tanh") ||
             command.equals("log") || command.equals("ln")) {
-            if (!currentInput.isEmpty() && !isOperator(expression.charAt(expression.length() - 1))) {
+            if (!expression.isEmpty() && !isOperator(expression.charAt(expression.length() - 1)) && expression.charAt(expression.length() - 1) != '(') {
                 expression += "×";
             }
             expression += command + "(";
@@ -162,10 +175,20 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         } else if (command.equals(")")) {
             expression += ")";
             display.setText(expression);
+        } else if (command.equals("^")) {
+            if (!expression.isEmpty() && Character.isDigit(expression.charAt(expression.length() - 1))) {
+                expression += "^";
+                display.setText(expression);
+            }
         } else if (command.equals("=")) {
             try {
                 double result = evaluateExpression(expression);
-                display.setText(String.valueOf(result));
+                
+                if (result == (long) result) {
+                    display.setText(String.valueOf((long) result));
+                } else {
+                    display.setText(String.valueOf(result));
+                }
                 expression = String.valueOf(result);
                 currentInput = "";
             } catch (Exception ex) {
@@ -174,7 +197,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 currentInput = "";
             }
         } else {
-            if (!expression.isEmpty() && (Character.isDigit(expression.charAt(expression.length() - 1)) || expression.charAt(expression.length() - 1) == ')')) {
+            if (!expression.isEmpty()) {
                 if (isOperator(expression.charAt(expression.length() - 1))) {
                     expression = expression.substring(0, expression.length() - 1) + command;
                 } else {
@@ -295,6 +318,51 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 return Math.pow(a, b);
         }
         return 0;
+    }
+
+    public void keyPressed(KeyEvent e) {
+        int key = e.getKeyCode();
+        char keyChar = e.getKeyChar();
+
+        if (Character.isDigit(keyChar)) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), String.valueOf(keyChar)));
+        } else if (key == KeyEvent.VK_BACK_SPACE) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "Del"));
+        } else if (key == KeyEvent.VK_PLUS || key == KeyEvent.VK_ADD || (key == KeyEvent.VK_EQUALS && e.isShiftDown())) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "+"));
+        } else if (key == KeyEvent.VK_ENTER || key == KeyEvent.VK_EQUALS) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "="));
+        } else if (key == KeyEvent.VK_MINUS || key == KeyEvent.VK_SUBTRACT) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "-"));
+        } else if (key == KeyEvent.VK_MULTIPLY || (key == KeyEvent.VK_8 && e.isShiftDown())) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "×"));
+        } else if (key == KeyEvent.VK_DIVIDE || (key == KeyEvent.VK_SLASH)) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "÷"));
+        } else if (key == KeyEvent.VK_DECIMAL) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "."));
+        } else if (key == KeyEvent.VK_OPEN_BRACKET || (key == KeyEvent.VK_9 && e.isShiftDown())) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "("));
+        } else if (key == KeyEvent.VK_CLOSE_BRACKET || (key == KeyEvent.VK_0 && e.isShiftDown())) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), ")"));
+        } else if (key == KeyEvent.VK_C) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "AC"));
+        } else if (key == KeyEvent.VK_P) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "π"));
+        } else if (key == KeyEvent.VK_E) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "e"));
+        } else if (key == KeyEvent.VK_S) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "sqrt"));
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        //nothing
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        //nothing
     }
 
     public static void main(String[] args) {
