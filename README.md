@@ -19,7 +19,7 @@ Scientific Calculator with many different features
 1. Clone the repository
 2. Navigate to the directory
 3. Compile the java files
-4. Run the game
+4. Run
 
 ## HOW TO PLAY
 
