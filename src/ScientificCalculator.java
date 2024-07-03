@@ -31,7 +31,7 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(-3, -3, -2, -2);
+        gbc.insets = new Insets(0, 0, 0, 0);
         gbc.weightx = 1;
         gbc.weighty = 1;
 
@@ -49,8 +49,24 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                 button.setFont(new Font("MV Boli", Font.PLAIN, 20));
                 button.addActionListener(this);
                 button.setFocusable(false);
+                button.setOpaque(true);
+                button.setContentAreaFilled(true);
+                
                 gbc.gridx = col;
                 gbc.gridy = row;
+
+                if (buttons[row][col].matches("\\d") || buttons[row][col].equals(".")) {
+                    button.setBackground(new Color(0x87CEEB));
+                } else if(buttons[row][col].equals("=")) {
+                    button.setBackground(new Color(0x5DB85B));
+                } else if(buttons[row][col].equals("+") || buttons[row][col].equals("-") || buttons[row][col].equals("×") || buttons[row][col].equals("÷")) {
+                    button.setBackground(new Color(0xE24949));
+                } else if(buttons[row][col].equals("π") || buttons[row][col].equals("e") || buttons[row][col].equals("2nd") || buttons[row][col].equals("Mode") || buttons[row][col].equals("Del") || buttons[row][col].equals("AC") || buttons[row][col].equals("+/-")) {
+                    button.setBackground(new Color(0x167570));
+                } else {
+                    button.setBackground(new Color(0xFFA07A));
+                }
+
                 buttonPanel.add(button, gbc);
             }
         }
@@ -114,14 +130,14 @@ public class ScientificCalculator extends JFrame implements ActionListener {
             display.setText(expression);
         } else if (command.equals("+/-")) {
             if (!currentInput.isEmpty()) {
-                if (currentInput.startsWith("-")) {
-                    expression = currentInput.substring(1);
-                } else {
-                    expression = "-" + currentInput;
-                }
+                currentInput += "-";
+                expression += "-";
                 display.setText(expression);
             }
         } else if (command.equals("√")) {
+            if (!currentInput.isEmpty() && !isOperator(expression.charAt(expression.length() - 1))) {
+                expression += "×";
+            }
             expression += "sqrt(";
             display.setText(expression);
         } else if (command.equals("Del")) {
@@ -132,7 +148,19 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         } else if (command.equals("sin") || command.equals("cos") || command.equals("tan") ||
             command.equals("sinh") || command.equals("cosh") || command.equals("tanh") ||
             command.equals("log") || command.equals("ln")) {
+            if (!currentInput.isEmpty() && !isOperator(expression.charAt(expression.length() - 1))) {
+                expression += "×";
+            }
             expression += command + "(";
+            display.setText(expression);
+        } else if (command.equals("(")) {
+            if (!currentInput.isEmpty() && Character.isDigit(currentInput.charAt(currentInput.length() - 1))) {
+                expression += "×";
+            }
+            expression += "(";
+            display.setText(expression);
+        } else if (command.equals(")")) {
+            expression += ")";
             display.setText(expression);
         } else if (command.equals("=")) {
             try {
@@ -192,12 +220,13 @@ public class ScientificCalculator extends JFrame implements ActionListener {
                     values.push(applyOp(ops.pop(), values.pop(), values.pop()));
                 ops.push(String.valueOf(tokens[i]));
             } else {
-                // Parse function names
                 StringBuilder sbuf = new StringBuilder();
                 while (i < tokens.length && Character.isLetter(tokens[i]))
                     sbuf.append(tokens[i++]);
-                ops.push(sbuf.toString());
-                i--;
+                if (!sbuf.toString().equals("")) {
+                    ops.push(sbuf.toString());
+                    i--;
+                }
             }
         }
 
