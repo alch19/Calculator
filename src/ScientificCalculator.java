@@ -176,7 +176,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             expression += ")";
             display.setText(expression);
         } else if (command.equals("^")) {
-            if (!expression.isEmpty() && Character.isDigit(expression.charAt(expression.length() - 1))) {
+            if (!expression.isEmpty() && (Character.isDigit(expression.charAt(expression.length() - 1)) || expression.charAt(expression.length() - 1) == ')') ) {
                 expression += "^";
                 display.setText(expression);
             }
