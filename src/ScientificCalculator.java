@@ -14,7 +14,9 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     private String currentInput = "";
     private String expression = "";
     private JToggleButton toggleButton;
+    private JButton menuButton;
     private boolean isDegrees = true;
+    private int decimalPlaces=9;
     
     public ScientificCalculator() {
         setTitle("Scientific Calculator");
@@ -98,12 +100,32 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             }
         });
 
+        menuButton = new JButton(new ImageIcon("gear.png"));
+        menuButton.setFocusable(false);
+        menuButton.setContentAreaFilled(true);
+        menuButton.setBorderPainted(false);
+        menuButton.setOpaque(true);
+        menuButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MenuPage menuPage = new MenuPage(ScientificCalculator.this);
+                menuPage.setVisible(true);
+            }
+        });
+
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 2));
         topPanel.setOpaque(true);
         topPanel.setBackground(Color.black);
         topPanel.add(display, BorderLayout.CENTER);
-        topPanel.add(toggleButton, BorderLayout.EAST);
+
+        JPanel topRightPanel = new JPanel(new BorderLayout());
+        topRightPanel.setOpaque(true);
+        topRightPanel.setBackground(Color.black);
+        topRightPanel.add(toggleButton, BorderLayout.WEST);
+        topRightPanel.add(menuButton, BorderLayout.EAST);
+        
+        topPanel.add(topRightPanel, BorderLayout.EAST);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -183,13 +205,16 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         } else if (command.equals("=")) {
             try {
                 double result = evaluateExpression(expression);
-                
+                String format = "%." + decimalPlaces + "f";
+
                 if (result == (long) result) {
                     display.setText(String.valueOf((long) result));
+                    expression = String.valueOf((long) result);
                 } else {
-                    display.setText(String.valueOf(result));
+                    String formattedResult = String.format(format, result);
+                    display.setText(formattedResult);
+                    expression = formattedResult;
                 }
-                expression = String.valueOf(result);
                 currentInput = "";
             } catch (Exception ex) {
                 display.setText("Error");
@@ -320,6 +345,14 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         return 0;
     }
 
+    public void setDecimalPlaces(int decimalPlaces) {
+        this.decimalPlaces = decimalPlaces;
+    }
+
+    public int getDecimalPlace() {
+        return this.decimalPlaces;
+    }
+
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         char keyChar = e.getKeyChar();
@@ -334,7 +367,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             actionPerformed(new ActionEvent(e.getSource(), e.getID(), "="));
         } else if (key == KeyEvent.VK_MINUS || key == KeyEvent.VK_SUBTRACT) {
             actionPerformed(new ActionEvent(e.getSource(), e.getID(), "-"));
-        } else if (key == KeyEvent.VK_MULTIPLY || (key == KeyEvent.VK_8 && e.isShiftDown())) {
+        } else if (key == KeyEvent.VK_MULTIPLY || (key == KeyEvent.VK_8 && e.isShiftDown()) || key == KeyEvent.VK_X) {
             actionPerformed(new ActionEvent(e.getSource(), e.getID(), "×"));
         } else if (key == KeyEvent.VK_DIVIDE || (key == KeyEvent.VK_SLASH)) {
             actionPerformed(new ActionEvent(e.getSource(), e.getID(), "÷"));
@@ -351,7 +384,9 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         } else if (key == KeyEvent.VK_E) {
             actionPerformed(new ActionEvent(e.getSource(), e.getID(), "e"));
         } else if (key == KeyEvent.VK_S) {
-            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "sqrt"));
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "√"));
+        } else if (key == KeyEvent.VK_6 && e.isShiftDown()) {
+            actionPerformed(new ActionEvent(e.getSource(), e.getID(), "^"));
         }
     }
 
